@@ -1,6 +1,7 @@
 {
   "domain": "jaedrive",
   "name": "JaeDrive",
+  "categories": ["vehicles_transport.cars_evs"],
   "codeowners": ["@Phabryc"],
   "config_flow": true,
   "documentation": "https://github.com/Phabryc/jaedrive-ha",

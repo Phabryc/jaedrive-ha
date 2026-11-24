@@ -39,10 +39,10 @@ Un dispositivo per auto, più un dispositivo "JaeDrive" per l'abbonamento.
 | Abbonamento cloud, scadenza abbonamento | diagnostica |
 
 Gli `entity_id` sono fissi e uguali in ogni lingua di Home Assistant:
-`sensor.jaedrive_<auto>_<chiave>` (es. `sensor.jaedrive_il_mio_jaecoo_odometer`,
-`device_tracker.jaedrive_il_mio_jaecoo_park`, `event.jaedrive_il_mio_jaecoo_trip`) e
-`binary_sensor.jaedrive_subscription_problem` / `sensor.jaedrive_subscription_expires` per l'account.
-I nomi mostrati invece sono tradotti.
+`sensor.jaedrive_<chiave>` (es. `sensor.jaedrive_odometer`, `device_tracker.jaedrive_park`,
+`event.jaedrive_trip`) e `binary_sensor.jaedrive_subscription_problem` /
+`sensor.jaedrive_subscription_expires` per l'account. Con più auto la seconda prende `_2` in fondo
+(`sensor.jaedrive_odometer_2`). I nomi mostrati invece sono tradotti.
 
 Contachilometri, batteria, data del tagliando e "dati aggiornati" ci sono sempre (vuoti finché
 l'auto non manda il dato), carburante e autonomia su tutte tranne le elettriche. Le altre entità
@@ -53,8 +53,8 @@ di cui l'auto non ha il dato non vengono create.
 [`dashboards/jaedrive.yaml`](dashboards/jaedrive.yaml): una plancia con sole card standard
 (tile, mappa, registro, grafici), niente da installare. Impostazioni > Plance > Aggiungi plancia >
 "Nuova plancia da zero", poi matita > tre puntini > "Editor di configurazione grezza", incollare il
-file e sostituire `AUTO` con il nome dell'auto come compare negli `entity_id`. Istruzioni e sezione
-in più per plug-in ed elettriche sono nei commenti del file.
+file: non c'è niente da cambiare. Istruzioni e sezione in più per plug-in ed elettriche sono nei
+commenti del file.
 
 ## Pubblicazione (note per chi mantiene il repo)
 

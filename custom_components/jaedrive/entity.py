@@ -9,7 +9,6 @@ from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.util import slugify
 
 from .const import DOMAIN
 from .coordinator import JaeDriveCoordinator
@@ -33,7 +32,7 @@ def vehicle_device_info(vehicle: dict[str, Any]) -> DeviceInfo:
 class JaeDriveVehicleEntity(CoordinatorEntity[JaeDriveCoordinator]):
     """Entità legata a un'auto. Il nome lo compone HA: "<auto> <nome entità>".
 
-    L'entity_id invece è fisso: `<piattaforma>.jaedrive_<auto>_<chiave>`, con la chiave in inglese.
+    L'entity_id invece è fisso: `<piattaforma>.jaedrive_<chiave>`, con la chiave in inglese.
     HA lo ricaverebbe dal nome tradotto, e in italiano verrebbe `sensor.<auto>_contachilometri`:
     la plancia pronta (dashboards/) non potrebbe valere per tutte le lingue. HA lo usa solo alla
     prima registrazione; dopo resta quello del registro (anche se l'utente lo rinomina).
@@ -49,8 +48,9 @@ class JaeDriveVehicleEntity(CoordinatorEntity[JaeDriveCoordinator]):
         self._attr_unique_id = f"{vehicle_id}_{key}"
         self._attr_device_info = vehicle_device_info(self.vehicle)
         if self._platform_domain:
-            car = slugify(self.vehicle.get("name") or "") or "auto"
-            self.entity_id = f"{self._platform_domain}.jaedrive_{car}_{key}"
+            # Senza il nome dell'auto: la plancia pronta si incolla così com'è. Per la seconda auto
+            # HA lo prende come suggerimento e aggiunge `_2` da solo.
+            self.entity_id = f"{self._platform_domain}.jaedrive_{key}"
 
     @property
     def vehicle(self) -> dict[str, Any]:

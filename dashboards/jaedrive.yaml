@@ -3,12 +3,11 @@
 # Come usarla:
 #   1. Impostazioni > Plance > Aggiungi plancia > "Nuova plancia da zero", aprila,
 #      matita in alto > tre puntini > "Editor di configurazione grezza".
-#   2. Incolla tutto questo file al posto di quello che c'è.
-#   3. Sostituisci AUTO con il nome dell'auto come compare negli entity_id
-#      (es. "Il mio Jaecoo" -> il_mio_jaecoo: guarda sensor.jaedrive_..._odometer
-#      in Impostazioni > Dispositivi e servizi > Entità).
+#   2. Incolla tutto questo file al posto di quello che c'è: non c'è niente da cambiare.
 #
 # Gli entity_id sono gli stessi in ogni lingua di Home Assistant.
+# Con più auto la seconda ha gli id con "_2" in fondo (sensor.jaedrive_odometer_2, ...):
+# per lei duplica la vista e aggiungi "_2" agli id.
 # Ibride plug-in ed elettriche: in fondo c'è una sezione in più da scommentare.
 # Senza il permesso "posizione" la mappa e "Parcheggiata dal" non ci sono: togli quelle card.
 
@@ -26,19 +25,19 @@ views:
             heading: Adesso
             icon: mdi:car-info
           - type: tile
-            entity: sensor.jaedrive_AUTO_battery
+            entity: sensor.jaedrive_battery
             name: Batteria
           - type: tile
-            entity: sensor.jaedrive_AUTO_fuel_level
+            entity: sensor.jaedrive_fuel_level
             name: Carburante
           - type: tile
-            entity: sensor.jaedrive_AUTO_fuel_range
+            entity: sensor.jaedrive_fuel_range
             name: Autonomia
           - type: tile
-            entity: sensor.jaedrive_AUTO_odometer
+            entity: sensor.jaedrive_odometer
             name: Contachilometri
           - type: tile
-            entity: sensor.jaedrive_AUTO_status_updated
+            entity: sensor.jaedrive_status_updated
             name: Dati aggiornati
             grid_options:
               columns: 12
@@ -50,12 +49,12 @@ views:
             icon: mdi:parking
           - type: map
             entities:
-              - entity: device_tracker.jaedrive_AUTO_park
+              - entity: device_tracker.jaedrive_park
             default_zoom: 15
             hours_to_show: 0
             theme_mode: auto
           - type: tile
-            entity: sensor.jaedrive_AUTO_parked_at
+            entity: sensor.jaedrive_parked_at
             name: Parcheggiata dal
             grid_options:
               columns: 12
@@ -66,14 +65,14 @@ views:
             heading: Ultimo viaggio
             icon: mdi:map-marker-path
           - type: tile
-            entity: sensor.jaedrive_AUTO_last_trip_distance
+            entity: sensor.jaedrive_last_trip_distance
             name: Distanza
           - type: tile
-            entity: sensor.jaedrive_AUTO_last_trip_consumption
+            entity: sensor.jaedrive_last_trip_consumption
             name: Consumo
           - type: logbook
             target:
-              entity_id: event.jaedrive_AUTO_trip
+              entity_id: event.jaedrive_trip
             hours_to_show: 168
             title: Viaggi della settimana
 
@@ -83,19 +82,19 @@ views:
             heading: Ultimi 30 giorni
             icon: mdi:calendar-month
           - type: tile
-            entity: sensor.jaedrive_AUTO_distance_30d
+            entity: sensor.jaedrive_distance_30d
             name: Percorsi
           - type: tile
-            entity: sensor.jaedrive_AUTO_consumption_30d
+            entity: sensor.jaedrive_consumption_30d
             name: Consumo medio
           # Solo ibride ed elettriche: per le altre togli questa card.
           - type: tile
-            entity: sensor.jaedrive_AUTO_ev_share_30d
+            entity: sensor.jaedrive_ev_share_30d
             name: Km in elettrico
           - type: statistics-graph
             title: Chilometri al giorno
             entities:
-              - sensor.jaedrive_AUTO_odometer
+              - sensor.jaedrive_odometer
             stat_types:
               - change
             chart_type: bar
@@ -105,9 +104,9 @@ views:
             title: Batteria e carburante
             hours_to_show: 168
             entities:
-              - entity: sensor.jaedrive_AUTO_battery
+              - entity: sensor.jaedrive_battery
                 name: Batteria
-              - entity: sensor.jaedrive_AUTO_fuel_level
+              - entity: sensor.jaedrive_fuel_level
                 name: Carburante
 
       - type: grid
@@ -116,7 +115,7 @@ views:
             heading: Tagliando e abbonamento
             icon: mdi:wrench-clock
           - type: tile
-            entity: sensor.jaedrive_AUTO_service_due_date
+            entity: sensor.jaedrive_service_due_date
             name: Tagliando entro
           - type: tile
             entity: binary_sensor.jaedrive_subscription_problem
@@ -127,7 +126,7 @@ views:
             grid_options:
               columns: 12
           - type: tile
-            entity: sensor.jaedrive_AUTO_last_seen
+            entity: sensor.jaedrive_last_seen
             name: Ultimo contatto dall'auto
             grid_options:
               columns: 12
@@ -139,11 +138,11 @@ views:
       #       heading: Elettrico
       #       icon: mdi:ev-station
       #     - type: tile
-      #       entity: sensor.jaedrive_AUTO_ev_range
+      #       entity: sensor.jaedrive_ev_range
       #       name: Autonomia elettrica
       #     - type: tile
-      #       entity: sensor.jaedrive_AUTO_electric_consumption_30d
+      #       entity: sensor.jaedrive_electric_consumption_30d
       #       name: Consumo elettrico (30 gg)
       #     - type: tile
-      #       entity: sensor.jaedrive_AUTO_ev_distance_total
+      #       entity: sensor.jaedrive_ev_distance_total
       #       name: Km elettrici totali

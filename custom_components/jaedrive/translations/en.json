@@ -1,0 +1,107 @@
+{
+  "config": {
+    "step": {
+      "reauth_confirm": {
+        "title": "Reconnect JaeDrive",
+        "description": "The JaeDrive link was revoked or is no longer valid. Continue to authorize Home Assistant again on the JaeDrive website."
+      }
+    },
+    "progress": {
+      "wait_for_approval": "Open [this link]({url}) and sign in to JaeDrive, then press **Allow**. If you are asked for a code, it is **{code}**. This window continues on its own once you have authorized."
+    },
+    "abort": {
+      "already_configured": "This JaeDrive account is already connected.",
+      "cannot_connect": "Cannot reach the JaeDrive cloud. Try again later.",
+      "denied": "The request was denied on the JaeDrive website.",
+      "expired": "The link expired before it was authorized. Start again.",
+      "reauth_successful": "JaeDrive reconnected.",
+      "wrong_account": "You authorized a different JaeDrive account from the one already connected."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "odometer": {
+        "name": "Odometer"
+      },
+      "service_due_distance": {
+        "name": "Distance to service"
+      },
+      "service_due_date": {
+        "name": "Service date"
+      },
+      "ev_distance_total": {
+        "name": "Electric distance"
+      },
+      "hev_distance_total": {
+        "name": "Hybrid distance"
+      },
+      "fuel_level": {
+        "name": "Fuel level"
+      },
+      "ev_range": {
+        "name": "Electric range"
+      },
+      "fuel_range": {
+        "name": "Fuel range"
+      },
+      "parked_at": {
+        "name": "Parked since"
+      },
+      "last_trip_distance": {
+        "name": "Last trip distance"
+      },
+      "last_trip_consumption": {
+        "name": "Last trip consumption"
+      },
+      "distance_30d": {
+        "name": "Distance last 30 days"
+      },
+      "consumption_30d": {
+        "name": "Consumption last 30 days"
+      },
+      "electric_consumption_30d": {
+        "name": "Electric consumption last 30 days"
+      },
+      "ev_share_30d": {
+        "name": "Electric share last 30 days"
+      },
+      "status_updated": {
+        "name": "Status updated"
+      },
+      "last_seen": {
+        "name": "Last sync"
+      },
+      "subscription_expires": {
+        "name": "Subscription expires"
+      }
+    },
+    "binary_sensor": {
+      "subscription_problem": {
+        "name": "Cloud subscription"
+      }
+    },
+    "device_tracker": {
+      "park": {
+        "name": "Parking"
+      }
+    },
+    "event": {
+      "trip": {
+        "name": "Trip",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "trip_ended": "Trip ended"
+            }
+          }
+        }
+      }
+    }
+  },
+  "issues": {
+    "subscription_expired": {
+      "title": "JaeDrive subscription expired",
+      "description": "Your JaeDrive cloud subscription is not active, so Home Assistant receives no car data. The connection stays in place: renew the subscription and the data comes back by itself."
+    }
+  }
+}

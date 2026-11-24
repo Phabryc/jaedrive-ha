@@ -1,0 +1,107 @@
+{
+  "config": {
+    "step": {
+      "reauth_confirm": {
+        "title": "Ricollega JaeDrive",
+        "description": "Il collegamento a JaeDrive è stato revocato o non è più valido. Continua per autorizzare di nuovo Home Assistant sul sito JaeDrive."
+      }
+    },
+    "progress": {
+      "wait_for_approval": "Apri [questo link]({url}) ed entra in JaeDrive, poi premi **Autorizza**. Se ti chiede un codice, è **{code}**. Questa finestra prosegue da sola appena hai autorizzato."
+    },
+    "abort": {
+      "already_configured": "Questo account JaeDrive è già collegato.",
+      "cannot_connect": "Il cloud JaeDrive non risponde. Riprova più tardi.",
+      "denied": "La richiesta è stata rifiutata sul sito JaeDrive.",
+      "expired": "Il link è scaduto prima dell'autorizzazione. Ricomincia.",
+      "reauth_successful": "JaeDrive ricollegato.",
+      "wrong_account": "Hai autorizzato un account JaeDrive diverso da quello già collegato."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "odometer": {
+        "name": "Contachilometri"
+      },
+      "service_due_distance": {
+        "name": "Km al tagliando"
+      },
+      "service_due_date": {
+        "name": "Data tagliando"
+      },
+      "ev_distance_total": {
+        "name": "Km in elettrico"
+      },
+      "hev_distance_total": {
+        "name": "Km in ibrido"
+      },
+      "fuel_level": {
+        "name": "Livello carburante"
+      },
+      "ev_range": {
+        "name": "Autonomia elettrica"
+      },
+      "fuel_range": {
+        "name": "Autonomia carburante"
+      },
+      "parked_at": {
+        "name": "Parcheggiata da"
+      },
+      "last_trip_distance": {
+        "name": "Ultimo viaggio"
+      },
+      "last_trip_consumption": {
+        "name": "Consumo ultimo viaggio"
+      },
+      "distance_30d": {
+        "name": "Km ultimi 30 giorni"
+      },
+      "consumption_30d": {
+        "name": "Consumo ultimi 30 giorni"
+      },
+      "electric_consumption_30d": {
+        "name": "Consumo elettrico ultimi 30 giorni"
+      },
+      "ev_share_30d": {
+        "name": "Quota elettrica ultimi 30 giorni"
+      },
+      "status_updated": {
+        "name": "Stato aggiornato"
+      },
+      "last_seen": {
+        "name": "Ultima sincronizzazione"
+      },
+      "subscription_expires": {
+        "name": "Scadenza abbonamento"
+      }
+    },
+    "binary_sensor": {
+      "subscription_problem": {
+        "name": "Abbonamento cloud"
+      }
+    },
+    "device_tracker": {
+      "park": {
+        "name": "Parcheggio"
+      }
+    },
+    "event": {
+      "trip": {
+        "name": "Viaggio",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "trip_ended": "Viaggio concluso"
+            }
+          }
+        }
+      }
+    }
+  },
+  "issues": {
+    "subscription_expired": {
+      "title": "Abbonamento JaeDrive scaduto",
+      "description": "L'abbonamento cloud JaeDrive non è attivo, quindi Home Assistant non riceve i dati dell'auto. Il collegamento resta: rinnova l'abbonamento e i dati tornano da soli."
+    }
+  }
+}

@@ -1,0 +1,2 @@
+# Fissa da sola la versione di Home Assistant con cui girano i test.
+pytest-homeassistant-custom-component

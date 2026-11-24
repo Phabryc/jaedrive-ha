@@ -70,11 +70,37 @@ views:
           - type: tile
             entity: sensor.jaedrive_last_trip_consumption
             name: Consumo
-          - type: logbook
-            target:
-              entity_id: event.jaedrive_trip
-            hours_to_show: 168
-            title: Viaggi della settimana
+          - type: entities
+            title: Dettagli
+            entities:
+              - type: attribute
+                entity: sensor.jaedrive_last_trip_distance
+                attribute: from
+                name: Partenza
+                icon: mdi:map-marker-outline
+              - type: attribute
+                entity: sensor.jaedrive_last_trip_distance
+                attribute: to
+                name: Arrivo
+                icon: mdi:flag-checkered
+              - type: attribute
+                entity: sensor.jaedrive_last_trip_distance
+                attribute: ended_at
+                name: Arrivata
+                icon: mdi:clock-outline
+                format: relative
+              - type: attribute
+                entity: sensor.jaedrive_last_trip_distance
+                attribute: duration_min
+                name: Durata
+                icon: mdi:timer-outline
+                suffix: min
+              - type: attribute
+                entity: sensor.jaedrive_last_trip_distance
+                attribute: liters
+                name: Carburante usato
+                icon: mdi:gas-station
+                suffix: L
 
       - type: grid
         cards:

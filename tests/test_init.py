@@ -121,3 +121,20 @@ async def test_migrates_entity_ids_from_0_1_0(hass: HomeAssistant, config_entry,
     assert registry.async_get_entity_id("sensor", DOMAIN, f"{VEHICLE_ID}_odometer") == "sensor.jaedrive_odometer"
     assert registry.async_get_entity_id("sensor", DOMAIN, f"{VEHICLE_ID}_battery") == "sensor.batteria_auto"
     assert hass.states.get("sensor.jaedrive_odometer").state == "12345"
+
+
+async def test_last_trip_details_and_manual_trips(hass: HomeAssistant, config_entry, mock_api) -> None:
+    await _setup(hass, config_entry)
+    assert hass.states.get("sensor.jaedrive_last_trip_start").state == "Casa"
+    assert hass.states.get("sensor.jaedrive_last_trip_end").state == "Ufficio"
+    assert hass.states.get("sensor.jaedrive_last_trip_duration").state == "30"
+    assert float(hass.states.get("sensor.jaedrive_last_trip_avg_speed").state) == 56.2
+    assert float(hass.states.get("sensor.jaedrive_last_trip_ev_share").state) == 42.0
+    # Full hybrid: niente sensori da plug-in.
+    assert hass.states.get("sensor.jaedrive_last_trip_energy") is None
+    trip_a = hass.states.get("sensor.jaedrive_trip_a_distance")
+    assert float(trip_a.state) == 812.4
+    assert trip_a.attributes["label"] == "Trip A"
+    assert float(hass.states.get("sensor.jaedrive_trip_a_consumption").state) == 5.08
+    # Trip B azzerato o mai partito: c'e' ma senza valore.
+    assert hass.states.get("sensor.jaedrive_trip_b_distance").state == "unknown"

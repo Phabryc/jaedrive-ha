@@ -73,6 +73,90 @@
       },
       "subscription_expires": {
         "name": "Scadenza abbonamento"
+      },
+      "last_trip_start": {
+        "name": "Partenza ultimo viaggio"
+      },
+      "last_trip_end": {
+        "name": "Arrivo ultimo viaggio"
+      },
+      "last_trip_ended_at": {
+        "name": "Fine ultimo viaggio"
+      },
+      "last_trip_duration": {
+        "name": "Durata ultimo viaggio"
+      },
+      "last_trip_avg_speed": {
+        "name": "Velocità media ultimo viaggio"
+      },
+      "last_trip_fuel_used": {
+        "name": "Carburante ultimo viaggio"
+      },
+      "last_trip_ev_share": {
+        "name": "Quota elettrica ultimo viaggio"
+      },
+      "last_trip_ev_distance": {
+        "name": "Km elettrici ultimo viaggio"
+      },
+      "last_trip_hev_distance": {
+        "name": "Km ibridi ultimo viaggio"
+      },
+      "last_trip_energy": {
+        "name": "Energia ultimo viaggio"
+      },
+      "last_trip_electric_consumption": {
+        "name": "Consumo elettrico ultimo viaggio"
+      },
+      "last_trip_battery_start": {
+        "name": "Batteria a inizio ultimo viaggio"
+      },
+      "last_trip_battery_end": {
+        "name": "Batteria a fine ultimo viaggio"
+      },
+      "last_trip_power_max": {
+        "name": "Potenza massima ultimo viaggio"
+      },
+      "last_trip_regen_max": {
+        "name": "Ricarica massima ultimo viaggio"
+      },
+      "last_trip_regen_energy": {
+        "name": "Energia recuperata ultimo viaggio"
+      },
+      "trip_a_distance": {
+        "name": "Trip A km"
+      },
+      "trip_a_fuel_used": {
+        "name": "Trip A carburante"
+      },
+      "trip_a_consumption": {
+        "name": "Trip A consumo"
+      },
+      "trip_a_since": {
+        "name": "Trip A dal"
+      },
+      "trip_a_ev_distance": {
+        "name": "Trip A km elettrici"
+      },
+      "trip_a_energy": {
+        "name": "Trip A energia"
+      },
+      "trip_b_distance": {
+        "name": "Trip B km"
+      },
+      "trip_b_fuel_used": {
+        "name": "Trip B carburante"
+      },
+      "trip_b_consumption": {
+        "name": "Trip B consumo"
+      },
+      "trip_b_since": {
+        "name": "Trip B dal"
+      },
+      "trip_b_ev_distance": {
+        "name": "Trip B km elettrici"
+      },
+      "trip_b_energy": {
+        "name": "Trip B energia"
       }
     },
     "binary_sensor": {

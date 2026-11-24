@@ -13,7 +13,16 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfLength
+from homeassistant.const import (
+    PERCENTAGE,
+    EntityCategory,
+    UnitOfEnergy,
+    UnitOfLength,
+    UnitOfPower,
+    UnitOfSpeed,
+    UnitOfTime,
+    UnitOfVolume,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util import dt as dt_util
@@ -48,6 +57,26 @@ def _trip(v: dict[str, Any], key: str) -> Any:
 
 def _stats(v: dict[str, Any], key: str) -> Any:
     return (v.get("stats30d") or {}).get(key)
+
+
+def _slot(v: dict[str, Any], slot: str, key: str) -> Any:
+    return (v.get(f"trip{slot.upper()}") or {}).get(key)
+
+
+def _plugin(v: dict[str, Any]) -> bool:
+    return (v.get("powertrain") or "").startswith(("SHS_P", "BEV"))
+
+
+def _hybrid(v: dict[str, Any]) -> bool:
+    return (v.get("powertrain") or "").startswith(("SHS", "BEV"))
+
+
+def _always(v: dict[str, Any]) -> bool:
+    return True
+
+
+def _minutes(seconds: Any) -> int | None:
+    return round(seconds / 60) if isinstance(seconds, (int, float)) and seconds > 0 else None
 
 
 def _park(v: dict[str, Any], key: str) -> Any:
@@ -241,6 +270,81 @@ VEHICLE_SENSORS: tuple[JaeDriveSensorDescription, ...] = (
 )
 
 
+def _d(key: str, value_fn: Callable[[dict[str, Any]], Any], exists_fn=_always, **kw: Any) -> JaeDriveSensorDescription:
+    return JaeDriveSensorDescription(key=key, translation_key=key, value_fn=value_fn, exists_fn=exists_fn, **kw)
+
+
+KM = {"device_class": SensorDeviceClass.DISTANCE, "native_unit_of_measurement": UnitOfLength.KILOMETERS, "suggested_display_precision": 1}
+LITERS = {"device_class": SensorDeviceClass.VOLUME, "native_unit_of_measurement": UnitOfVolume.LITERS, "suggested_display_precision": 2}
+KWH = {"device_class": SensorDeviceClass.ENERGY, "native_unit_of_measurement": UnitOfEnergy.KILO_WATT_HOUR, "suggested_display_precision": 2}
+KW = {"device_class": SensorDeviceClass.POWER, "native_unit_of_measurement": UnitOfPower.KILO_WATT, "suggested_display_precision": 0}
+SOC = {"device_class": SensorDeviceClass.BATTERY, "native_unit_of_measurement": PERCENTAGE, "suggested_display_precision": 0}
+
+# Ultimo viaggio: gli stessi dati delle card del dettaglio viaggio sul sito (non i grafici).
+LAST_TRIP_SENSORS: tuple[JaeDriveSensorDescription, ...] = (
+    _d("last_trip_start", lambda v: _trip(v, "from")),
+    _d("last_trip_end", lambda v: _trip(v, "to")),
+    _d("last_trip_ended_at", lambda v: _ts(_trip(v, "endedAt")), device_class=SensorDeviceClass.TIMESTAMP),
+    _d(
+        "last_trip_duration",
+        lambda v: _minutes(_trip(v, "durationSec")),
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+    ),
+    _d(
+        "last_trip_avg_speed",
+        lambda v: _trip(v, "avgSpeedKmh"),
+        device_class=SensorDeviceClass.SPEED,
+        native_unit_of_measurement=UnitOfSpeed.KILOMETERS_PER_HOUR,
+        suggested_display_precision=0,
+    ),
+    _d("last_trip_fuel_used", lambda v: _trip(v, "liters"), **LITERS),
+    _d(
+        "last_trip_ev_share",
+        lambda v: (_trip(v, "flowPct") or {}).get("ev"),
+        _hybrid,
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
+    ),
+    _d("last_trip_ev_distance", lambda v: _trip(v, "kmEv"), _plugin, **KM),
+    _d("last_trip_hev_distance", lambda v: _trip(v, "kmHev"), _plugin, **KM),
+    _d("last_trip_energy", lambda v: _trip(v, "kwh"), _plugin, **KWH),
+    _d(
+        "last_trip_electric_consumption",
+        lambda v: _trip(v, "kwhPer100Km"),
+        _plugin,
+        native_unit_of_measurement=CONSUMPTION_KWH,
+        suggested_display_precision=1,
+    ),
+    _d("last_trip_battery_start", lambda v: _trip(v, "socStart"), _plugin, **SOC),
+    _d("last_trip_battery_end", lambda v: _trip(v, "socEnd"), _plugin, **SOC),
+    _d("last_trip_power_max", lambda v: _trip(v, "powerKwMax"), _plugin, **KW),
+    _d("last_trip_regen_max", lambda v: _trip(v, "regenKwMax"), _plugin, **KW),
+    _d("last_trip_regen_energy", lambda v: _trip(v, "regenKwh"), _plugin, **KWH),
+)
+
+
+def _slot_sensors(slot: str) -> tuple[JaeDriveSensorDescription, ...]:
+    """Trip A/B in corso (il manuale non ancora azzerato). Ci sono sempre, come nell'app."""
+    return (
+        _d(f"trip_{slot}_distance", lambda v: _slot(v, slot, "km"), attrs_fn=lambda v: {"label": _slot(v, slot, "label")}, **KM),
+        _d(f"trip_{slot}_fuel_used", lambda v: _slot(v, slot, "liters"), **LITERS),
+        _d(
+            f"trip_{slot}_consumption",
+            lambda v: _l100(_slot(v, slot, "kmPerLiter")),
+            native_unit_of_measurement=CONSUMPTION_L,
+            suggested_display_precision=1,
+            attrs_fn=lambda v: {"km_per_liter": _slot(v, slot, "kmPerLiter")},
+        ),
+        _d(f"trip_{slot}_since", lambda v: _ts(_slot(v, slot, "startedAt")), device_class=SensorDeviceClass.TIMESTAMP),
+        _d(f"trip_{slot}_ev_distance", lambda v: _slot(v, slot, "kmEv"), _plugin, **KM),
+        _d(f"trip_{slot}_energy", lambda v: _slot(v, slot, "kwh"), _plugin, **KWH),
+    )
+
+
+ALL_VEHICLE_SENSORS = VEHICLE_SENSORS + LAST_TRIP_SENSORS + _slot_sensors("a") + _slot_sensors("b")
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: JaeDriveConfigEntry,
@@ -251,7 +355,7 @@ async def async_setup_entry(
     def build(vehicle_id: str, vehicle: dict[str, Any]) -> list[JaeDriveVehicleSensor]:
         return [
             JaeDriveVehicleSensor(coordinator, vehicle_id, d)
-            for d in VEHICLE_SENSORS
+            for d in ALL_VEHICLE_SENSORS
             if (d.exists_fn(vehicle) if d.exists_fn else d.value_fn(vehicle) is not None)
         ]
 

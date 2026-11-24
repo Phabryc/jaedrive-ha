@@ -1,33 +1,162 @@
 {
   "entity": {
     "binary_sensor": {
-      "subscription_problem": { "default": "mdi:cloud-check", "state": { "on": "mdi:cloud-alert" } }
+      "subscription_problem": {
+        "default": "mdi:cloud-check",
+        "state": {
+          "on": "mdi:cloud-alert"
+        }
+      }
     },
     "device_tracker": {
-      "park": { "default": "mdi:car" }
+      "park": {
+        "default": "mdi:car"
+      }
     },
     "event": {
-      "trip": { "default": "mdi:map-marker-path" }
+      "trip": {
+        "default": "mdi:map-marker-path"
+      }
     },
     "sensor": {
-      "odometer": { "default": "mdi:counter" },
-      "service_due_distance": { "default": "mdi:wrench-clock" },
-      "service_due_date": { "default": "mdi:wrench-clock" },
-      "ev_distance_total": { "default": "mdi:leaf" },
-      "hev_distance_total": { "default": "mdi:engine" },
-      "fuel_level": { "default": "mdi:gas-station" },
-      "ev_range": { "default": "mdi:ev-station" },
-      "fuel_range": { "default": "mdi:map-marker-distance" },
-      "parked_at": { "default": "mdi:parking" },
-      "last_trip_distance": { "default": "mdi:map-marker-distance" },
-      "last_trip_consumption": { "default": "mdi:fuel" },
-      "distance_30d": { "default": "mdi:road-variant" },
-      "consumption_30d": { "default": "mdi:fuel" },
-      "electric_consumption_30d": { "default": "mdi:lightning-bolt" },
-      "ev_share_30d": { "default": "mdi:leaf" },
-      "status_updated": { "default": "mdi:update" },
-      "last_seen": { "default": "mdi:car-connected" },
-      "subscription_expires": { "default": "mdi:calendar-clock" }
+      "odometer": {
+        "default": "mdi:counter"
+      },
+      "service_due_distance": {
+        "default": "mdi:wrench-clock"
+      },
+      "service_due_date": {
+        "default": "mdi:wrench-clock"
+      },
+      "ev_distance_total": {
+        "default": "mdi:leaf"
+      },
+      "hev_distance_total": {
+        "default": "mdi:engine"
+      },
+      "fuel_level": {
+        "default": "mdi:gas-station"
+      },
+      "ev_range": {
+        "default": "mdi:ev-station"
+      },
+      "fuel_range": {
+        "default": "mdi:map-marker-distance"
+      },
+      "parked_at": {
+        "default": "mdi:parking"
+      },
+      "last_trip_distance": {
+        "default": "mdi:map-marker-distance"
+      },
+      "last_trip_consumption": {
+        "default": "mdi:fuel"
+      },
+      "distance_30d": {
+        "default": "mdi:road-variant"
+      },
+      "consumption_30d": {
+        "default": "mdi:fuel"
+      },
+      "electric_consumption_30d": {
+        "default": "mdi:lightning-bolt"
+      },
+      "ev_share_30d": {
+        "default": "mdi:leaf"
+      },
+      "status_updated": {
+        "default": "mdi:update"
+      },
+      "last_seen": {
+        "default": "mdi:car-connected"
+      },
+      "subscription_expires": {
+        "default": "mdi:calendar-clock"
+      },
+      "last_trip_start": {
+        "default": "mdi:map-marker-outline"
+      },
+      "last_trip_end": {
+        "default": "mdi:flag-checkered"
+      },
+      "last_trip_ended_at": {
+        "default": "mdi:clock-end"
+      },
+      "last_trip_duration": {
+        "default": "mdi:timer-outline"
+      },
+      "last_trip_avg_speed": {
+        "default": "mdi:speedometer"
+      },
+      "last_trip_fuel_used": {
+        "default": "mdi:gas-station"
+      },
+      "last_trip_ev_share": {
+        "default": "mdi:leaf"
+      },
+      "last_trip_ev_distance": {
+        "default": "mdi:leaf"
+      },
+      "last_trip_hev_distance": {
+        "default": "mdi:engine"
+      },
+      "last_trip_energy": {
+        "default": "mdi:lightning-bolt"
+      },
+      "last_trip_electric_consumption": {
+        "default": "mdi:lightning-bolt"
+      },
+      "last_trip_battery_start": {
+        "default": "mdi:battery-arrow-up"
+      },
+      "last_trip_battery_end": {
+        "default": "mdi:battery-arrow-down"
+      },
+      "last_trip_power_max": {
+        "default": "mdi:flash"
+      },
+      "last_trip_regen_max": {
+        "default": "mdi:battery-charging"
+      },
+      "last_trip_regen_energy": {
+        "default": "mdi:battery-charging"
+      },
+      "trip_a_distance": {
+        "default": "mdi:counter"
+      },
+      "trip_a_fuel_used": {
+        "default": "mdi:gas-station"
+      },
+      "trip_a_consumption": {
+        "default": "mdi:fuel"
+      },
+      "trip_a_since": {
+        "default": "mdi:calendar-start"
+      },
+      "trip_a_ev_distance": {
+        "default": "mdi:leaf"
+      },
+      "trip_a_energy": {
+        "default": "mdi:lightning-bolt"
+      },
+      "trip_b_distance": {
+        "default": "mdi:counter"
+      },
+      "trip_b_fuel_used": {
+        "default": "mdi:gas-station"
+      },
+      "trip_b_consumption": {
+        "default": "mdi:fuel"
+      },
+      "trip_b_since": {
+        "default": "mdi:calendar-start"
+      },
+      "trip_b_ev_distance": {
+        "default": "mdi:leaf"
+      },
+      "trip_b_energy": {
+        "default": "mdi:lightning-bolt"
+      }
     }
   }
 }

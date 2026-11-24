@@ -73,6 +73,90 @@
       },
       "subscription_expires": {
         "name": "Subscription expires"
+      },
+      "last_trip_start": {
+        "name": "Last trip start"
+      },
+      "last_trip_end": {
+        "name": "Last trip destination"
+      },
+      "last_trip_ended_at": {
+        "name": "Last trip ended"
+      },
+      "last_trip_duration": {
+        "name": "Last trip duration"
+      },
+      "last_trip_avg_speed": {
+        "name": "Last trip average speed"
+      },
+      "last_trip_fuel_used": {
+        "name": "Last trip fuel used"
+      },
+      "last_trip_ev_share": {
+        "name": "Last trip electric share"
+      },
+      "last_trip_ev_distance": {
+        "name": "Last trip electric distance"
+      },
+      "last_trip_hev_distance": {
+        "name": "Last trip hybrid distance"
+      },
+      "last_trip_energy": {
+        "name": "Last trip energy"
+      },
+      "last_trip_electric_consumption": {
+        "name": "Last trip electric consumption"
+      },
+      "last_trip_battery_start": {
+        "name": "Last trip battery at start"
+      },
+      "last_trip_battery_end": {
+        "name": "Last trip battery at end"
+      },
+      "last_trip_power_max": {
+        "name": "Last trip peak power"
+      },
+      "last_trip_regen_max": {
+        "name": "Last trip peak regeneration"
+      },
+      "last_trip_regen_energy": {
+        "name": "Last trip recovered energy"
+      },
+      "trip_a_distance": {
+        "name": "Trip A distance"
+      },
+      "trip_a_fuel_used": {
+        "name": "Trip A fuel used"
+      },
+      "trip_a_consumption": {
+        "name": "Trip A consumption"
+      },
+      "trip_a_since": {
+        "name": "Trip A since"
+      },
+      "trip_a_ev_distance": {
+        "name": "Trip A electric distance"
+      },
+      "trip_a_energy": {
+        "name": "Trip A energy"
+      },
+      "trip_b_distance": {
+        "name": "Trip B distance"
+      },
+      "trip_b_fuel_used": {
+        "name": "Trip B fuel used"
+      },
+      "trip_b_consumption": {
+        "name": "Trip B consumption"
+      },
+      "trip_b_since": {
+        "name": "Trip B since"
+      },
+      "trip_b_ev_distance": {
+        "name": "Trip B electric distance"
+      },
+      "trip_b_energy": {
+        "name": "Trip B energy"
       }
     },
     "binary_sensor": {

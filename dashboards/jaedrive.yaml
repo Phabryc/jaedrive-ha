@@ -1,20 +1,21 @@
-# Plancia JaeDrive pronta per Home Assistant: solo card standard, niente da installare.
+# JaeDrive dashboard for Home Assistant: built-in cards only, nothing to install.
 #
-# Come usarla:
-#   1. Impostazioni > Plance > Aggiungi plancia > "Nuova plancia da zero", aprila,
-#      matita in alto > tre puntini > "Editor di configurazione grezza".
-#   2. Incolla tutto questo file al posto di quello che c'è: non c'è niente da cambiare.
+# How to use it:
+#   1. Settings > Dashboards > Add dashboard > "New dashboard from scratch", open it,
+#      pencil (top right) > three dots > "Raw configuration editor".
+#   2. Paste this whole file in place of what is there. Nothing to change.
 #
-# Gli entity_id sono gli stessi in ogni lingua di Home Assistant.
-# Con più auto la seconda ha gli id con "_2" in fondo (sensor.jaedrive_odometer_2, ...):
-# per lei duplica la vista e aggiungi "_2" agli id.
-# Ibride plug-in ed elettriche: in fondo c'è una sezione in più da scommentare.
-# Senza il permesso "posizione" la mappa e "Parcheggiata dal" non ci sono: togli quelle card.
+# Card names come from the entities, so they follow the language of Home Assistant; only the
+# section headings are fixed (in English). Entity ids are the same in every language.
+# With a second car its ids end with "_2" (sensor.jaedrive_odometer_2, ...): duplicate the view
+# and add "_2" to the ids.
+# Plug-in hybrids and EVs: uncomment the "Electric" section at the bottom.
+# Without the "location" permission the map and "Parked since" are missing: remove those cards.
 
 title: JaeDrive
 views:
-  - title: Auto
-    path: auto
+  - title: Car
+    path: car
     icon: mdi:car
     type: sections
     max_columns: 3
@@ -22,30 +23,35 @@ views:
       - type: grid
         cards:
           - type: heading
-            heading: Adesso
+            heading: Now
             icon: mdi:car-info
           - type: tile
             entity: sensor.jaedrive_battery
-            name: Batteria
+            name:
+              type: entity
           - type: tile
             entity: sensor.jaedrive_fuel_level
-            name: Carburante
+            name:
+              type: entity
           - type: tile
             entity: sensor.jaedrive_fuel_range
-            name: Autonomia
+            name:
+              type: entity
           - type: tile
             entity: sensor.jaedrive_odometer
-            name: Contachilometri
+            name:
+              type: entity
           - type: tile
             entity: sensor.jaedrive_status_updated
-            name: Dati aggiornati
+            name:
+              type: entity
             grid_options:
               columns: 12
 
       - type: grid
         cards:
           - type: heading
-            heading: Dove è parcheggiata
+            heading: Parking
             icon: mdi:parking
           - type: map
             entities:
@@ -55,70 +61,103 @@ views:
             theme_mode: auto
           - type: tile
             entity: sensor.jaedrive_parked_at
-            name: Parcheggiata dal
+            name:
+              type: entity
             grid_options:
               columns: 12
 
       - type: grid
         cards:
           - type: heading
-            heading: Ultimo viaggio
+            heading: Last trip
             icon: mdi:map-marker-path
-          - type: tile
-            entity: sensor.jaedrive_last_trip_distance
-            name: Distanza
-          - type: tile
-            entity: sensor.jaedrive_last_trip_consumption
-            name: Consumo
           - type: entities
-            title: Dettagli
             entities:
-              - type: attribute
-                entity: sensor.jaedrive_last_trip_distance
-                attribute: from
-                name: Partenza
-                icon: mdi:map-marker-outline
-              - type: attribute
-                entity: sensor.jaedrive_last_trip_distance
-                attribute: to
-                name: Arrivo
-                icon: mdi:flag-checkered
-              - type: attribute
-                entity: sensor.jaedrive_last_trip_distance
-                attribute: ended_at
-                name: Arrivata
-                icon: mdi:clock-outline
-                format: relative
-              - type: attribute
-                entity: sensor.jaedrive_last_trip_distance
-                attribute: duration_min
-                name: Durata
-                icon: mdi:timer-outline
-                suffix: min
-              - type: attribute
-                entity: sensor.jaedrive_last_trip_distance
-                attribute: liters
-                name: Carburante usato
-                icon: mdi:gas-station
-                suffix: L
+              - entity: sensor.jaedrive_last_trip_start
+                name:
+                  type: entity
+              - entity: sensor.jaedrive_last_trip_end
+                name:
+                  type: entity
+              - entity: sensor.jaedrive_last_trip_ended_at
+                name:
+                  type: entity
+              - entity: sensor.jaedrive_last_trip_distance
+                name:
+                  type: entity
+              - entity: sensor.jaedrive_last_trip_consumption
+                name:
+                  type: entity
+              - entity: sensor.jaedrive_last_trip_fuel_used
+                name:
+                  type: entity
+              - entity: sensor.jaedrive_last_trip_avg_speed
+                name:
+                  type: entity
+              - entity: sensor.jaedrive_last_trip_duration
+                name:
+                  type: entity
+              # Hybrids and EVs only: remove this row on petrol cars.
+              - entity: sensor.jaedrive_last_trip_ev_share
+                name:
+                  type: entity
 
       - type: grid
         cards:
           - type: heading
-            heading: Ultimi 30 giorni
+            heading: Trip A
+            icon: mdi:alpha-a-box-outline
+          - type: entities
+            entities:
+              - entity: sensor.jaedrive_trip_a_distance
+                name:
+                  type: entity
+              - entity: sensor.jaedrive_trip_a_consumption
+                name:
+                  type: entity
+              - entity: sensor.jaedrive_trip_a_fuel_used
+                name:
+                  type: entity
+              - entity: sensor.jaedrive_trip_a_since
+                name:
+                  type: entity
+          - type: heading
+            heading: Trip B
+            icon: mdi:alpha-b-box-outline
+          - type: entities
+            entities:
+              - entity: sensor.jaedrive_trip_b_distance
+                name:
+                  type: entity
+              - entity: sensor.jaedrive_trip_b_consumption
+                name:
+                  type: entity
+              - entity: sensor.jaedrive_trip_b_fuel_used
+                name:
+                  type: entity
+              - entity: sensor.jaedrive_trip_b_since
+                name:
+                  type: entity
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Last 30 days
             icon: mdi:calendar-month
           - type: tile
             entity: sensor.jaedrive_distance_30d
-            name: Percorsi
+            name:
+              type: entity
           - type: tile
             entity: sensor.jaedrive_consumption_30d
-            name: Consumo medio
-          # Solo ibride ed elettriche: per le altre togli questa card.
+            name:
+              type: entity
+          # Hybrids and EVs only: remove this card on petrol cars.
           - type: tile
             entity: sensor.jaedrive_ev_share_30d
-            name: Km in elettrico
+            name:
+              type: entity
           - type: statistics-graph
-            title: Chilometri al giorno
             entities:
               - sensor.jaedrive_odometer
             stat_types:
@@ -127,48 +166,104 @@ views:
             period: day
             days_to_show: 30
           - type: history-graph
-            title: Batteria e carburante
             hours_to_show: 168
             entities:
-              - entity: sensor.jaedrive_battery
-                name: Batteria
-              - entity: sensor.jaedrive_fuel_level
-                name: Carburante
+              - sensor.jaedrive_battery
+              - sensor.jaedrive_fuel_level
 
       - type: grid
         cards:
           - type: heading
-            heading: Tagliando e abbonamento
+            heading: Service and subscription
             icon: mdi:wrench-clock
           - type: tile
             entity: sensor.jaedrive_service_due_date
-            name: Tagliando entro
+            name:
+              type: entity
           - type: tile
             entity: binary_sensor.jaedrive_subscription_problem
-            name: Abbonamento cloud
+            name:
+              type: entity
           - type: tile
             entity: sensor.jaedrive_subscription_expires
-            name: Scadenza abbonamento
+            name:
+              type: entity
             grid_options:
               columns: 12
           - type: tile
             entity: sensor.jaedrive_last_seen
-            name: Ultimo contatto dall'auto
+            name:
+              type: entity
             grid_options:
               columns: 12
 
-      # Ibride plug-in (SHS-P) ed elettriche: scommenta questa sezione.
+      # Plug-in hybrids (SHS-P) and EVs: uncomment this section.
       # - type: grid
       #   cards:
       #     - type: heading
-      #       heading: Elettrico
+      #       heading: Electric
       #       icon: mdi:ev-station
       #     - type: tile
       #       entity: sensor.jaedrive_ev_range
-      #       name: Autonomia elettrica
+      #       name:
+      #         type: entity
       #     - type: tile
       #       entity: sensor.jaedrive_electric_consumption_30d
-      #       name: Consumo elettrico (30 gg)
+      #       name:
+      #         type: entity
       #     - type: tile
       #       entity: sensor.jaedrive_ev_distance_total
-      #       name: Km elettrici totali
+      #       name:
+      #         type: entity
+      #     - type: tile
+      #       entity: sensor.jaedrive_last_trip_ev_distance
+      #       name:
+      #         type: entity
+      #     - type: tile
+      #       entity: sensor.jaedrive_last_trip_hev_distance
+      #       name:
+      #         type: entity
+      #     - type: tile
+      #       entity: sensor.jaedrive_last_trip_energy
+      #       name:
+      #         type: entity
+      #     - type: tile
+      #       entity: sensor.jaedrive_last_trip_electric_consumption
+      #       name:
+      #         type: entity
+      #     - type: tile
+      #       entity: sensor.jaedrive_last_trip_battery_start
+      #       name:
+      #         type: entity
+      #     - type: tile
+      #       entity: sensor.jaedrive_last_trip_battery_end
+      #       name:
+      #         type: entity
+      #     - type: tile
+      #       entity: sensor.jaedrive_last_trip_power_max
+      #       name:
+      #         type: entity
+      #     - type: tile
+      #       entity: sensor.jaedrive_last_trip_regen_max
+      #       name:
+      #         type: entity
+      #     - type: tile
+      #       entity: sensor.jaedrive_last_trip_regen_energy
+      #       name:
+      #         type: entity
+      #     - type: tile
+      #       entity: sensor.jaedrive_trip_a_ev_distance
+      #       name:
+      #         type: entity
+      #     - type: tile
+      #       entity: sensor.jaedrive_trip_a_energy
+      #       name:
+      #         type: entity
+      #     - type: tile
+      #       entity: sensor.jaedrive_trip_b_ev_distance
+      #       name:
+      #         type: entity
+      #     - type: tile
+      #       entity: sensor.jaedrive_trip_b_energy
+      #       name:
+      #         type: entity

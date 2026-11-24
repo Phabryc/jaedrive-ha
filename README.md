@@ -33,7 +33,9 @@ Un dispositivo per auto, più un dispositivo "JaeDrive" per l'abbonamento.
 | Km al tagliando, data tagliando | |
 | Batteria, livello carburante, autonomie | se l'auto le espone |
 | Parcheggio (`device_tracker`), parcheggiata da | solo con il permesso alla posizione |
-| Ultimo viaggio, consumo ultimo viaggio | attributi: partenza, arrivo, durata, litri, kWh, % elettrico |
+| Ultimo viaggio: partenza, arrivo, fine, km, consumo, litri, velocità media, durata, quota elettrica | come le card del dettaglio viaggio sul sito |
+| Ultimo viaggio, solo plug-in: km elettrici/ibridi, kWh, kWh/100 km, batteria inizio/fine, potenza e ricarica massime, energia recuperata | |
+| Trip A e Trip B in corso: km, consumo, litri, dal (+ km elettrici e kWh sulle plug-in) | il contatore manuale non ancora azzerato; etichetta nell'attributo `label` |
 | Km, consumo, quota elettrica ultimi 30 giorni | |
 | Viaggio (`event`) | `trip_ended` a ogni viaggio concluso, per le automazioni |
 | Abbonamento cloud, scadenza abbonamento | diagnostica |
@@ -44,6 +46,9 @@ Gli `entity_id` sono fissi e uguali in ogni lingua di Home Assistant:
 `sensor.jaedrive_subscription_expires` per l'account. Con più auto la seconda prende `_2` in fondo
 (`sensor.jaedrive_odometer_2`). I nomi mostrati invece sono tradotti.
 
+Trip A/B: il cloud riconosce lo slot dall'etichetta predefinita "Trip A"/"Trip B"; se l'hai
+rinominata nell'app, A è il contatore aperto da più tempo.
+
 Contachilometri, batteria, data del tagliando e "dati aggiornati" ci sono sempre (vuoti finché
 l'auto non manda il dato), carburante e autonomia su tutte tranne le elettriche. Le altre entità
 di cui l'auto non ha il dato non vengono create.
@@ -53,8 +58,9 @@ di cui l'auto non ha il dato non vengono create.
 [`dashboards/jaedrive.yaml`](dashboards/jaedrive.yaml): una plancia con sole card standard
 (tile, mappa, registro, grafici), niente da installare. Impostazioni > Plance > Aggiungi plancia >
 "Nuova plancia da zero", poi matita > tre puntini > "Editor di configurazione grezza", incollare il
-file: non c'è niente da cambiare. Istruzioni e sezione in più per plug-in ed elettriche sono nei
-commenti del file.
+file: non c'è niente da cambiare. I nomi delle card vengono dalle entità e seguono la lingua di
+Home Assistant; solo i titoli delle sezioni sono fissi, in inglese. Istruzioni e sezione in più per
+plug-in ed elettriche sono nei commenti del file.
 
 ## Pubblicazione (note per chi mantiene il repo)
 

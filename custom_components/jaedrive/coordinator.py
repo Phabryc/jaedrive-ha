@@ -31,7 +31,10 @@ type JaeDriveConfigEntry = ConfigEntry[JaeDriveCoordinator]
 
 
 class JaeDriveCoordinator(DataUpdateCoordinator[dict[str, Any]]):
-    """Data: {"subscription": {...}, "vehicles": {id: car}}.
+    """Data: {"subscription": {...}, "units": {...} | None, "vehicles": {id: car}}.
+
+    "units" are the display units of the JaeDrive profile, shared with the car app and the
+    website: {"distance": "km" | "mi", "consumption": "ratio" | "l100"}; None = not known yet.
 
     With an expired subscription the cars stay as in the last known state (entities become
     "unavailable", they do not disappear) and only the subscription is updated.
@@ -48,10 +51,26 @@ class JaeDriveCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     def subscription_active(self) -> bool:
         return bool(self.data and self.data.get("subscription", {}).get("active"))
 
-    def _merge(self, subscription: dict[str, Any] | None = None, vehicles: list[dict[str, Any]] | None = None) -> dict[str, Any]:
-        data = dict(self.data or {"subscription": {}, "vehicles": {}})
+    @property
+    def units(self) -> dict[str, str]:
+        """Profile units; without them, km and L/100 km as before."""
+        units = (self.data or {}).get("units") or {}
+        return {
+            "distance": "mi" if units.get("distance") == "mi" else "km",
+            "consumption": "ratio" if units.get("consumption") == "ratio" else "l100",
+        }
+
+    def _merge(
+        self,
+        subscription: dict[str, Any] | None = None,
+        vehicles: list[dict[str, Any]] | None = None,
+        units: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        data = dict(self.data or {"subscription": {}, "units": None, "vehicles": {}})
         if subscription is not None:
             data["subscription"] = subscription
+        if isinstance(units, dict):
+            data["units"] = units
         if vehicles is not None:
             data["vehicles"] = {v["id"]: v for v in vehicles}
         return data
@@ -66,7 +85,11 @@ class JaeDriveCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except JaeDriveError as err:
             raise UpdateFailed(str(err)) from err
         else:
-            data = self._merge(subscription=state.get("subscription", {}), vehicles=state.get("vehicles", []))
+            data = self._merge(
+                subscription=state.get("subscription", {}),
+                vehicles=state.get("vehicles", []),
+                units=state.get("units"),
+            )
         self._sync_issue(data["subscription"])
         return data
 
@@ -120,7 +143,11 @@ class JaeDriveCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             data = self._merge(subscription=payload)
             self._sync_issue(payload)
         elif event == "state":
-            data = self._merge(subscription=payload.get("subscription"), vehicles=payload.get("vehicles", []))
+            data = self._merge(
+                subscription=payload.get("subscription"),
+                vehicles=payload.get("vehicles", []),
+                units=payload.get("units"),
+            )
         elif event == "vehicle" and isinstance(payload.get("vehicle"), dict):
             data = self._merge()
             vehicle = payload["vehicle"]

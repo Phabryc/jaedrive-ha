@@ -138,3 +138,39 @@ async def test_last_trip_details_and_manual_trips(hass: HomeAssistant, config_en
     assert float(hass.states.get("sensor.jaedrive_trip_a_consumption").state) == 5.08
     # Trip B reset or never started: it exists but has no value.
     assert hass.states.get("sensor.jaedrive_trip_b_distance").state == "unknown"
+
+
+async def test_units_from_profile(hass: HomeAssistant, config_entry, mock_api, stream, vehicle) -> None:
+    """Consumption and distance units follow the JaeDrive profile."""
+    await _setup(hass, config_entry)
+    # No units in the profile yet: L/100 km and km as before.
+    consumption = hass.states.get("sensor.jaedrive_last_trip_consumption")
+    assert consumption.attributes["unit_of_measurement"] == "L/100 km"
+    assert hass.states.get("sensor.jaedrive_odometer").attributes["unit_of_measurement"] == "km"
+
+    stream.push("state", {"subscription": SUBSCRIPTION, "units": {"distance": "km", "consumption": "ratio"}, "vehicles": [vehicle]})
+    await hass.async_block_till_done()
+    consumption = hass.states.get("sensor.jaedrive_last_trip_consumption")
+    assert float(consumption.state) == 19.5
+    assert consumption.attributes["unit_of_measurement"] == "km/L"
+    # km the first time: nothing written in the registry.
+    reg = er.async_get(hass).async_get("sensor.jaedrive_odometer")
+    assert "unit_of_measurement" not in reg.options.get("sensor", {})
+
+    stream.push("state", {"subscription": SUBSCRIPTION, "units": {"distance": "mi", "consumption": "ratio"}, "vehicles": [vehicle]})
+    await hass.async_block_till_done()
+    consumption = hass.states.get("sensor.jaedrive_last_trip_consumption")
+    # 19.5 km/l = 55.08 mpg (imperial gallon)
+    assert float(consumption.state) == 55.08
+    assert consumption.attributes["unit_of_measurement"] == "mpg"
+    odometer = hass.states.get("sensor.jaedrive_odometer")
+    assert odometer.attributes["unit_of_measurement"] == "mi"
+    assert round(float(odometer.state)) == 7671
+    assert hass.states.get("sensor.jaedrive_last_trip_avg_speed").attributes["unit_of_measurement"] == "mph"
+
+    stream.push("state", {"subscription": SUBSCRIPTION, "units": {"distance": "km", "consumption": "l100"}, "vehicles": [vehicle]})
+    await hass.async_block_till_done()
+    assert hass.states.get("sensor.jaedrive_odometer").attributes["unit_of_measurement"] == "km"
+    consumption = hass.states.get("sensor.jaedrive_last_trip_consumption")
+    assert float(consumption.state) == 5.13
+    assert consumption.attributes["unit_of_measurement"] == "L/100 km"

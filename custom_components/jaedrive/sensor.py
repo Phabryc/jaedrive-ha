@@ -23,7 +23,8 @@ from homeassistant.const import (
     UnitOfTime,
     UnitOfVolume,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util import dt as dt_util
 
@@ -32,8 +33,41 @@ from .entity import JaeDriveAccountEntity, JaeDriveVehicleEntity, track_vehicles
 
 PARALLEL_UPDATES = 0
 
-CONSUMPTION_L = "L/100 km"
-CONSUMPTION_KWH = "kWh/100 km"
+# Consumption as in the app and on the website, from the units of the JaeDrive profile
+# (coordinator.units). Miles use the imperial gallon, as the app does.
+KM_TO_MI = 0.621371
+L_PER_IMPERIAL_GALLON = 4.54609
+FUEL_UNITS = {
+    ("km", "ratio"): "km/L",
+    ("km", "l100"): "L/100 km",
+    ("mi", "ratio"): "mpg",
+    ("mi", "l100"): "gal/100 mi",
+}
+ELECTRIC_UNITS = {"km": "kWh/100 km", "mi": "kWh/100 mi"}
+# Distances and speeds keep km and km/h as native unit; the profile picks the display unit.
+DISPLAY_UNITS = {
+    SensorDeviceClass.DISTANCE: {"km": UnitOfLength.KILOMETERS, "mi": UnitOfLength.MILES},
+    SensorDeviceClass.SPEED: {"km": UnitOfSpeed.KILOMETERS_PER_HOUR, "mi": UnitOfSpeed.MILES_PER_HOUR},
+}
+APPLIED_DISTANCE_UNIT = "applied_distance_unit"
+
+
+def fuel_consumption(km_per_liter: Any, units: dict[str, str]) -> float | None:
+    """The cloud gives km/l; convert it to the unit of the profile."""
+    if not isinstance(km_per_liter, (int, float)) or km_per_liter <= 0:
+        return None
+    miles = units["distance"] == "mi"
+    if units["consumption"] == "l100":
+        per_100_km = 100 / km_per_liter
+        return round(per_100_km / (KM_TO_MI * L_PER_IMPERIAL_GALLON) if miles else per_100_km, 2)
+    return round(km_per_liter * KM_TO_MI * L_PER_IMPERIAL_GALLON if miles else km_per_liter, 2)
+
+
+def electric_consumption(kwh_per_100_km: Any, units: dict[str, str]) -> float | None:
+    """The cloud gives kWh/100 km; with miles it becomes kWh/100 mi."""
+    if not isinstance(kwh_per_100_km, (int, float)):
+        return None
+    return round(kwh_per_100_km / KM_TO_MI if units["distance"] == "mi" else kwh_per_100_km, 2)
 
 
 def _ts(value: Any) -> datetime | None:
@@ -42,13 +76,6 @@ def _ts(value: Any) -> datetime | None:
 
 def _date(value: Any) -> date | None:
     return date.fromisoformat(value) if isinstance(value, str) else None
-
-
-def _l100(km_per_liter: Any) -> float | None:
-    """The cloud gives consumption in km/l; HA shows it in L/100 km."""
-    if not isinstance(km_per_liter, (int, float)) or km_per_liter <= 0:
-        return None
-    return round(100 / km_per_liter, 2)
 
 
 def _trip(v: dict[str, Any], key: str) -> Any:
@@ -90,6 +117,8 @@ class JaeDriveSensorDescription(SensorEntityDescription):
     # expose the value does not get an entity that is "unknown" forever.
     exists_fn: Callable[[dict[str, Any]], bool] | None = None
     attrs_fn: Callable[[dict[str, Any]], dict[str, Any]] | None = None
+    # "fuel" (value_fn gives km/l) or "electric" (kWh/100 km): value and unit follow the profile.
+    consumption: str | None = None
 
 
 def _trip_attrs(v: dict[str, Any]) -> dict[str, Any]:
@@ -210,9 +239,9 @@ VEHICLE_SENSORS: tuple[JaeDriveSensorDescription, ...] = (
     JaeDriveSensorDescription(
         key="last_trip_consumption",
         translation_key="last_trip_consumption",
-        native_unit_of_measurement=CONSUMPTION_L,
+        consumption="fuel",
         suggested_display_precision=1,
-        value_fn=lambda v: _l100(_trip(v, "kmPerLiter")),
+        value_fn=lambda v: _trip(v, "kmPerLiter"),
         exists_fn=lambda v: True,
         attrs_fn=lambda v: {"km_per_liter": _trip(v, "kmPerLiter")},
     ),
@@ -229,16 +258,16 @@ VEHICLE_SENSORS: tuple[JaeDriveSensorDescription, ...] = (
     JaeDriveSensorDescription(
         key="consumption_30d",
         translation_key="consumption_30d",
-        native_unit_of_measurement=CONSUMPTION_L,
+        consumption="fuel",
         suggested_display_precision=1,
-        value_fn=lambda v: _l100(_stats(v, "kmPerLiter")),
+        value_fn=lambda v: _stats(v, "kmPerLiter"),
         exists_fn=lambda v: True,
         attrs_fn=lambda v: {"km_per_liter": _stats(v, "kmPerLiter")},
     ),
     JaeDriveSensorDescription(
         key="electric_consumption_30d",
         translation_key="electric_consumption_30d",
-        native_unit_of_measurement=CONSUMPTION_KWH,
+        consumption="electric",
         suggested_display_precision=1,
         value_fn=lambda v: _stats(v, "avgKwhPer100Km"),
         exists_fn=lambda v: (v.get("powertrain") or "").startswith(("SHS_P", "BEV")),
@@ -313,7 +342,7 @@ LAST_TRIP_SENSORS: tuple[JaeDriveSensorDescription, ...] = (
         "last_trip_electric_consumption",
         lambda v: _trip(v, "kwhPer100Km"),
         _plugin,
-        native_unit_of_measurement=CONSUMPTION_KWH,
+        consumption="electric",
         suggested_display_precision=1,
     ),
     _d("last_trip_battery_start", lambda v: _trip(v, "socStart"), _plugin, **SOC),
@@ -331,8 +360,8 @@ def _slot_sensors(slot: str) -> tuple[JaeDriveSensorDescription, ...]:
         _d(f"trip_{slot}_fuel_used", lambda v: _slot(v, slot, "liters"), **LITERS),
         _d(
             f"trip_{slot}_consumption",
-            lambda v: _l100(_slot(v, slot, "kmPerLiter")),
-            native_unit_of_measurement=CONSUMPTION_L,
+            lambda v: _slot(v, slot, "kmPerLiter"),
+            consumption="fuel",
             suggested_display_precision=1,
             attrs_fn=lambda v: {"km_per_liter": _slot(v, slot, "kmPerLiter")},
         ),
@@ -362,6 +391,34 @@ async def async_setup_entry(
     entry.async_on_unload(track_vehicles(coordinator, async_add_entities, build))
     async_add_entities([JaeDriveSubscriptionExpirySensor(coordinator)])
 
+    @callback
+    def apply_distance_unit() -> None:
+        """Distance unit of the JaeDrive profile -> display unit of distances and speeds.
+
+        Written in the entity registry, as when the unit is picked in the entity settings, and
+        only when the profile changes it: a unit picked by hand in HA stays until then. The first
+        time km is just recorded, so an imperial HA keeps its miles until the profile says so.
+        """
+        unit = coordinator.units["distance"]
+        applied = entry.data.get(APPLIED_DISTANCE_UNIT)
+        if unit == applied:
+            return
+        if applied is not None or unit != "km":
+            registry = er.async_get(hass)
+            for reg in er.async_entries_for_config_entry(registry, entry.entry_id):
+                units = DISPLAY_UNITS.get(reg.original_device_class)
+                if reg.domain != "sensor" or units is None:
+                    continue
+                options = dict(reg.options.get("sensor", {}))
+                if options.get("unit_of_measurement") == units[unit]:
+                    continue
+                options["unit_of_measurement"] = units[unit]
+                registry.async_update_entity_options(reg.entity_id, "sensor", options)
+        hass.config_entries.async_update_entry(entry, data={**entry.data, APPLIED_DISTANCE_UNIT: unit})
+
+    apply_distance_unit()
+    entry.async_on_unload(coordinator.async_add_listener(apply_distance_unit))
+
 
 class JaeDriveVehicleSensor(JaeDriveVehicleEntity, SensorEntity):
     _platform_domain = "sensor"
@@ -373,7 +430,31 @@ class JaeDriveVehicleSensor(JaeDriveVehicleEntity, SensorEntity):
 
     @property
     def native_value(self) -> Any:
-        return self.entity_description.value_fn(self.vehicle)
+        value = self.entity_description.value_fn(self.vehicle)
+        kind = self.entity_description.consumption
+        if kind == "fuel":
+            return fuel_consumption(value, self.coordinator.units)
+        if kind == "electric":
+            return electric_consumption(value, self.coordinator.units)
+        return value
+
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        units = self.coordinator.units
+        kind = self.entity_description.consumption
+        if kind == "fuel":
+            return FUEL_UNITS[(units["distance"], units["consumption"])]
+        if kind == "electric":
+            return ELECTRIC_UNITS[units["distance"]]
+        return self.entity_description.native_unit_of_measurement
+
+    @property
+    def suggested_unit_of_measurement(self) -> str | None:
+        """New entities (a new car) start with the distance unit of the profile."""
+        units = DISPLAY_UNITS.get(self.entity_description.device_class)
+        if units is not None:
+            return units[self.coordinator.units["distance"]]
+        return self.entity_description.suggested_unit_of_measurement
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:

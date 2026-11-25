@@ -57,7 +57,7 @@ const STRINGS = {
     parked: "Parked",
     no_location: "Parking location not shared with Home Assistant.",
     no_car: "No JaeDrive car found. Add the JaeDrive integration first.",
-    km_per_day: "Km per day",
+    km_per_day: "Distance per day",
     pick_car: "Car (empty = first one)",
     unknown_place: "Unknown place",
   },
@@ -99,7 +99,7 @@ const STRINGS = {
     parked: "Parcheggiata",
     no_location: "Posizione del parcheggio non condivisa con Home Assistant.",
     no_car: "Nessuna auto JaeDrive trovata. Aggiungi prima l'integrazione JaeDrive.",
-    km_per_day: "Km al giorno",
+    km_per_day: "Distanza al giorno",
     pick_car: "Auto (vuoto = la prima)",
     unknown_place: "Luogo sconosciuto",
   },
@@ -152,6 +152,9 @@ const stateObj = (hass, id) => {
   const s = id && hass.states[id];
   return s && s.state !== "unknown" && s.state !== "unavailable" ? s : null;
 };
+
+// Unit of an entity, e.g. "kWh/100 km" or "kWh/100 mi" from the units of the JaeDrive profile.
+const unitOf = (hass, id) => (id && hass.states[id]?.attributes?.unit_of_measurement) || "";
 
 const num = (hass, id) => {
   const n = parseFloat(stateObj(hass, id)?.state);
@@ -465,7 +468,9 @@ class JaeDriveLastTripCard extends JaeDriveCard {
       stat(hass, e.last_trip_ev_distance, t(hass, "electric")),
       stat(hass, e.last_trip_hev_distance, t(hass, "hybrid")),
       stat(hass, e.last_trip_energy, t(hass, "energy")),
-      stat(hass, e.last_trip_electric_consumption, t(hass, "electric_consumption"), { unit: false }),
+      stat(hass, e.last_trip_electric_consumption, unitOf(hass, e.last_trip_electric_consumption) || t(hass, "electric_consumption"), {
+        unit: false,
+      }),
       this._soc(hass, e),
       stat(hass, e.last_trip_power_max, t(hass, "peak_power")),
       stat(hass, e.last_trip_regen_max, t(hass, "peak_regen")),
@@ -555,7 +560,7 @@ class JaeDriveStatsCard extends JaeDriveCard {
     }${stat(hass, e.consumption_30d, t(hass, "consumption"))}${stat(
       hass,
       e.electric_consumption_30d,
-      t(hass, "electric_consumption"),
+      unitOf(hass, e.electric_consumption_30d) || t(hass, "electric_consumption"),
       { unit: false },
     )}</div>`;
     const ev = num(hass, e.ev_share_30d);

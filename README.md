@@ -88,6 +88,11 @@ are translated.
 Trip A/B: the cloud recognizes the slot from the default label "Trip A"/"Trip B"; if you renamed it
 in the app, A is the counter that has been running for longer.
 
+Units follow your JaeDrive profile, the same as the car app and the website: change them in the app
+(Settings) or on the website (Settings → App preferences) and Home Assistant follows. Consumption is
+shown in km/L, L/100 km, mpg or gal/100 mi (imperial gallon, as in the app); distances and speeds in
+km or miles. A unit you pick by hand in the entity settings stays until the profile changes.
+
 Odometer, battery, service date and "data updated" are always there (empty until the car sends
 them), fuel and range on every car except EVs. Other entities the car has no data for are not
 created.

@@ -1,4 +1,4 @@
-"""Setup, entità e aggiornamenti dallo stream."""
+"""Setup, entities and updates from the stream."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ async def test_entities_created(hass: HomeAssistant, config_entry, mock_api) -> 
     assert hass.states.get("sensor.jaedrive_odometer").state == "12345"
     assert hass.states.get("sensor.jaedrive_battery").state == "61.2"
     assert hass.states.get("sensor.jaedrive_fuel_range").state == "420"
-    # 19,5 km/l = 5,13 L/100 km
+    # 19.5 km/l = 5.13 L/100 km
     consumption = hass.states.get("sensor.jaedrive_last_trip_consumption")
     assert float(consumption.state) == 5.13
     assert consumption.attributes["km_per_liter"] == 19.5
@@ -34,7 +34,7 @@ async def test_entities_created(hass: HomeAssistant, config_entry, mock_api) -> 
     assert tracker.attributes["latitude"] == 45.46
     assert tracker.attributes["address"] == "Piazza Duomo, Milano"
     assert hass.states.get("binary_sensor.jaedrive_subscription_problem").state == "off"
-    # Un dato che questa auto non ha: nessuna entità.
+    # A value this car does not have: no entity.
     assert hass.states.get("sensor.jaedrive_ev_range") is None
 
 
@@ -88,7 +88,7 @@ async def test_auth_error_on_setup(hass: HomeAssistant, config_entry, mock_api) 
 
 
 async def test_entity_ids_do_not_depend_on_language(hass: HomeAssistant, config_entry, mock_api) -> None:
-    # In italiano HA ricaverebbe "sensor.jaecoo_test_contachilometri": la plancia pronta non andrebbe.
+    # In Italian HA would derive "sensor.jaecoo_test_contachilometri": the YAML dashboard would break.
     hass.config.language = "it"
     await _setup(hass, config_entry)
     assert hass.states.get("sensor.jaedrive_odometer").state == "12345"
@@ -97,7 +97,7 @@ async def test_entity_ids_do_not_depend_on_language(hass: HomeAssistant, config_
 
 
 async def test_second_vehicle_gets_suffix(hass: HomeAssistant, config_entry, mock_api, vehicle) -> None:
-    other = {**vehicle, "id": "veh-2", "name": "Omoda di prova", "odometerKm": 500}
+    other = {**vehicle, "id": "veh-2", "name": "Omoda test", "odometerKm": 500}
     mock_api.get_state.return_value = {"subscription": dict(SUBSCRIPTION), "vehicles": [vehicle, other]}
     await _setup(hass, config_entry)
     assert hass.states.get("sensor.jaedrive_odometer").state == "12345"
@@ -105,7 +105,7 @@ async def test_second_vehicle_gets_suffix(hass: HomeAssistant, config_entry, moc
 
 
 async def test_migrates_entity_ids_from_0_1_0(hass: HomeAssistant, config_entry, mock_api) -> None:
-    # La 0.1.0 metteva il nome dell'auto nell'id: all'avvio si rinominano, quelli cambiati a mano no.
+    # 0.1.0 put the car name in the id: they are renamed at startup, ids changed by hand are not.
     config_entry.add_to_hass(hass)
     registry = er.async_get(hass)
     registry.async_get_or_create(
@@ -125,16 +125,16 @@ async def test_migrates_entity_ids_from_0_1_0(hass: HomeAssistant, config_entry,
 
 async def test_last_trip_details_and_manual_trips(hass: HomeAssistant, config_entry, mock_api) -> None:
     await _setup(hass, config_entry)
-    assert hass.states.get("sensor.jaedrive_last_trip_start").state == "Casa"
-    assert hass.states.get("sensor.jaedrive_last_trip_end").state == "Ufficio"
+    assert hass.states.get("sensor.jaedrive_last_trip_start").state == "Home"
+    assert hass.states.get("sensor.jaedrive_last_trip_end").state == "Office"
     assert hass.states.get("sensor.jaedrive_last_trip_duration").state == "30"
     assert float(hass.states.get("sensor.jaedrive_last_trip_avg_speed").state) == 56.2
     assert float(hass.states.get("sensor.jaedrive_last_trip_ev_share").state) == 42.0
-    # Full hybrid: niente sensori da plug-in.
+    # Full hybrid: no plug-in sensors.
     assert hass.states.get("sensor.jaedrive_last_trip_energy") is None
     trip_a = hass.states.get("sensor.jaedrive_trip_a_distance")
     assert float(trip_a.state) == 812.4
     assert trip_a.attributes["label"] == "Trip A"
     assert float(hass.states.get("sensor.jaedrive_trip_a_consumption").state) == 5.08
-    # Trip B azzerato o mai partito: c'e' ma senza valore.
+    # Trip B reset or never started: it exists but has no value.
     assert hass.states.get("sensor.jaedrive_trip_b_distance").state == "unknown"

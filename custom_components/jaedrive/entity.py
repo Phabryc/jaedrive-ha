@@ -1,4 +1,4 @@
-"""Basi comuni: un dispositivo per auto, più un dispositivo "account" per l'abbonamento."""
+"""Common bases: one device per car, plus an "account" device for the subscription."""
 
 from __future__ import annotations
 
@@ -30,16 +30,16 @@ def vehicle_device_info(vehicle: dict[str, Any]) -> DeviceInfo:
 
 
 class JaeDriveVehicleEntity(CoordinatorEntity[JaeDriveCoordinator]):
-    """Entità legata a un'auto. Il nome lo compone HA: "<auto> <nome entità>".
+    """Entity of a car. HA builds the name: "<car> <entity name>".
 
-    L'entity_id invece è fisso: `<piattaforma>.jaedrive_<chiave>`, con la chiave in inglese.
-    HA lo ricaverebbe dal nome tradotto, e in italiano verrebbe `sensor.<auto>_contachilometri`:
-    la plancia pronta (dashboards/) non potrebbe valere per tutte le lingue. HA lo usa solo alla
-    prima registrazione; dopo resta quello del registro (anche se l'utente lo rinomina).
+    The entity_id instead is fixed: `<platform>.jaedrive_<key>`, with the key in English.
+    HA would derive it from the translated name (in Italian `sensor.<car>_contachilometri`), and
+    the YAML dashboard (dashboards/) could not work in every language. HA uses it only at the
+    first registration; after that the registry one stays (even if the user renames it).
     """
 
     _attr_has_entity_name = True
-    # Dominio della piattaforma, per l'entity_id: lo fissa ogni sottoclasse.
+    # Platform domain, for the entity_id: every subclass sets it.
     _platform_domain: str = ""
 
     def __init__(self, coordinator: JaeDriveCoordinator, vehicle_id: str, key: str) -> None:
@@ -48,8 +48,8 @@ class JaeDriveVehicleEntity(CoordinatorEntity[JaeDriveCoordinator]):
         self._attr_unique_id = f"{vehicle_id}_{key}"
         self._attr_device_info = vehicle_device_info(self.vehicle)
         if self._platform_domain:
-            # Senza il nome dell'auto: la plancia pronta si incolla così com'è. Per la seconda auto
-            # HA lo prende come suggerimento e aggiunge `_2` da solo.
+            # Without the car name: the YAML dashboard works as is. For a second car HA takes it
+            # as a suggestion and adds `_2` by itself.
             self.entity_id = f"{self._platform_domain}.jaedrive_{key}"
 
     @property
@@ -58,12 +58,12 @@ class JaeDriveVehicleEntity(CoordinatorEntity[JaeDriveCoordinator]):
 
     @property
     def available(self) -> bool:
-        # Abbonamento scaduto o auto rimossa dal cloud: "non disponibile", senza cancellare niente.
+        # Subscription expired or car removed from the cloud: "unavailable", nothing is deleted.
         return super().available and self.coordinator.subscription_active and bool(self.vehicle)
 
 
 class JaeDriveAccountEntity(CoordinatorEntity[JaeDriveCoordinator]):
-    """Entità dell'account (abbonamento): restano disponibili anche ad abbonamento scaduto."""
+    """Account entities (subscription): they stay available even when the subscription expired."""
 
     _attr_has_entity_name = True
 
@@ -93,7 +93,7 @@ def track_vehicles(
     add_entities: Callable[[Iterable[Entity]], None],
     build: Callable[[str, dict[str, Any]], list[Entity]],
 ) -> Callable[[], None]:
-    """Crea le entità delle auto presenti e di quelle che compaiono dopo (nuovo pairing)."""
+    """Create the entities of the current cars and of the ones that appear later (new pairing)."""
     known: set[str] = set()
 
     @callback

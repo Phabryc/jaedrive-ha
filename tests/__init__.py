@@ -1,1 +1,1 @@
-"""Test dell'integrazione JaeDrive."""
+"""JaeDrive integration tests."""

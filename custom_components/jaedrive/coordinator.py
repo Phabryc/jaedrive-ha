@@ -1,4 +1,4 @@
-"""Coordinator: stato iniziale via /state, poi aggiornamenti push dallo stream SSE."""
+"""Coordinator: initial state from /state, then push updates from the SSE stream."""
 
 from __future__ import annotations
 
@@ -31,10 +31,10 @@ type JaeDriveConfigEntry = ConfigEntry[JaeDriveCoordinator]
 
 
 class JaeDriveCoordinator(DataUpdateCoordinator[dict[str, Any]]):
-    """Dati: {"subscription": {...}, "vehicles": {id: auto}}.
+    """Data: {"subscription": {...}, "vehicles": {id: car}}.
 
-    Ad abbonamento scaduto le auto restano quelle dell'ultimo stato noto (le entità vanno in
-    "non disponibile", non spariscono) e si aggiorna solo l'abbonamento.
+    With an expired subscription the cars stay as in the last known state (entities become
+    "unavailable", they do not disappear) and only the subscription is updated.
     """
 
     config_entry: JaeDriveConfigEntry
@@ -71,7 +71,7 @@ class JaeDriveCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         return data
 
     def _sync_issue(self, subscription: dict[str, Any]) -> None:
-        """Repair "abbonamento scaduto" finché il cloud non torna attivo."""
+        """Repair issue "subscription expired" until the cloud is active again."""
         if subscription.get("active"):
             ir.async_delete_issue(self.hass, DOMAIN, ISSUE_SUBSCRIPTION)
             return
@@ -85,7 +85,7 @@ class JaeDriveCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             learn_more_url=PLANS_URL,
         )
 
-    # --- stream SSE ---------------------------------------------------------------------
+    # --- SSE stream ----------------------------------------------------------------------
 
     def start_stream(self) -> None:
         self._stream_task = self.config_entry.async_create_background_task(
@@ -104,13 +104,13 @@ class JaeDriveCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 self.config_entry.async_start_reauth(self.hass)
                 return
             except JaeDriveError as err:
-                _LOGGER.debug("Stream JaeDrive interrotto: %s", err)
+                _LOGGER.debug("JaeDrive stream interrupted: %s", err)
             delay = backoff + random.uniform(0, backoff / 2)
             backoff = min(backoff * 2, STREAM_BACKOFF_MAX)
             await asyncio.sleep(delay)
 
     def _handle_event(self, event: str, payload: Any) -> bool:
-        """Applica un evento; True = fermare lo stream (token revocato)."""
+        """Apply an event; True = stop the stream (token revoked)."""
         if event == "revoked":
             self.config_entry.async_start_reauth(self.hass)
             return True

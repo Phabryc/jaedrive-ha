@@ -1,4 +1,4 @@
-"""Fixture comuni: un'auto come la manda il cloud e un client finto."""
+"""Common fixtures: a car as the cloud sends it and a fake client."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ VEHICLE_ID = "veh-1"
 
 SUBSCRIPTION = {"active": True, "status": "PREMIUM", "tier": "STANDARD", "expiresAt": "2026-12-24T21:11:02.858Z", "reason": None}
 
-# Stessa forma della risposta reale di GET /api/ha/v1/state.
+# Same shape as the real GET /api/ha/v1/state response.
 VEHICLE: dict[str, Any] = {
     "id": VEHICLE_ID,
     "name": "Jaecoo test",
@@ -43,8 +43,8 @@ VEHICLE: dict[str, Any] = {
         "id": "trip-1",
         "startedAt": "2026-11-24T20:11:02.869Z",
         "endedAt": "2026-11-24T20:41:02.869Z",
-        "from": "Casa",
-        "to": "Ufficio",
+        "from": "Home",
+        "to": "Office",
         "km": 23.4,
         "liters": 1.2,
         "kmPerLiter": 19.5,
@@ -97,7 +97,7 @@ def config_entry() -> MockConfigEntry:
 
 
 class FakeStream:
-    """Coda di eventi SSE: i test ci mettono (evento, dati) e il coordinator li legge."""
+    """SSE event queue: tests put (event, data) in it and the coordinator reads them."""
 
     def __init__(self) -> None:
         self.queue: asyncio.Queue[tuple[str, Any]] = asyncio.Queue()
@@ -117,7 +117,7 @@ def stream() -> FakeStream:
 
 @pytest.fixture
 def mock_api(vehicle, stream):
-    """JaeDriveApi finto: /state dà l'auto di prova, lo stream è la coda FakeStream."""
+    """Fake JaeDriveApi: /state returns the test car, the stream is the FakeStream queue."""
     with patch("custom_components.jaedrive.JaeDriveApi", autospec=True) as cls:
         api = cls.return_value
         api.get_state.return_value = {"subscription": dict(SUBSCRIPTION), "vehicles": [vehicle]}

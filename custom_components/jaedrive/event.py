@@ -1,4 +1,4 @@
-"""Evento "viaggio concluso", per le automazioni tipo "sono arrivato"."""
+"""Trip ended event, for automations like "I have arrived"."""
 
 from __future__ import annotations
 

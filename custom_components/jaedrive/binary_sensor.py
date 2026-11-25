@@ -1,4 +1,4 @@
-"""Abbonamento cloud non attivo: un problema da segnalare (anche per le automazioni)."""
+"""Cloud subscription not active: a problem to report (also for automations)."""
 
 from __future__ import annotations
 

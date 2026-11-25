@@ -1,4 +1,7 @@
-# JaeDrive dashboard for Home Assistant: built-in cards only, nothing to install.
+# JaeDrive dashboard for Home Assistant: built-in cards only, to copy and change by hand.
+#
+# You usually don't need it: Settings > Dashboards > Add dashboard > "JaeDrive" creates a
+# dashboard that builds and updates itself. Use this file only to start from plain cards.
 #
 # How to use it:
 #   1. Settings > Dashboards > Add dashboard > "New dashboard from scratch", open it,

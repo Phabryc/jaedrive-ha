@@ -1,6 +1,7 @@
 {
   "domain": "jaedrive",
   "name": "JaeDrive",
+  "after_dependencies": ["frontend", "http"],
   "categories": ["vehicles_transport.cars_evs"],
   "codeowners": ["@Phabryc"],
   "config_flow": true,
@@ -9,5 +10,5 @@
   "iot_class": "cloud_push",
   "issue_tracker": "https://github.com/Phabryc/jaedrive-ha/issues",
   "requirements": [],
-  "version": "0.2.0"
+  "version": "0.3.0"
 }

@@ -1,14 +1,19 @@
-"""Integrazione JaeDrive: i dati delle auto dal cloud JaeDrive, in sola lettura."""
+"""JaeDrive integration: car data from the JaeDrive cloud, read only."""
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.typing import ConfigType
+from homeassistant.loader import async_get_integration
 
 from .api import JaeDriveApi
-from .const import CONF_BASE_URL, CONF_TOKEN, DEFAULT_BASE_URL
+from .const import CONF_BASE_URL, CONF_TOKEN, DEFAULT_BASE_URL, DOMAIN, FRONTEND_URL
 from .coordinator import JaeDriveConfigEntry, JaeDriveCoordinator
 
 PLATFORMS: list[Platform] = [
@@ -17,6 +22,29 @@ PLATFORMS: list[Platform] = [
     Platform.EVENT,
     Platform.SENSOR,
 ]
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Serve the cards and the dashboard strategy, and load them in every browser."""
+    await _async_register_frontend(hass)
+    return True
+
+
+async def _async_register_frontend(hass: HomeAssistant) -> None:
+    # Without http or frontend (tests, minimal setups) the entities still work.
+    if hass.http is None or "frontend" not in hass.config.components:
+        return
+    from homeassistant.components.frontend import add_extra_js_url
+    from homeassistant.components.http import StaticPathConfig
+
+    version = (await async_get_integration(hass, DOMAIN)).version
+    await hass.http.async_register_static_paths(
+        [StaticPathConfig(FRONTEND_URL, str(Path(__file__).parent / "frontend"), cache_headers=False)]
+    )
+    # The version in the query makes browsers fetch the new file after an update.
+    add_extra_js_url(hass, f"{FRONTEND_URL}/jaedrive.js?v={version}")
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: JaeDriveConfigEntry) -> bool:
@@ -35,17 +63,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: JaeDriveConfigEntry) -> 
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: JaeDriveConfigEntry) -> bool:
-    # Il task dello stream è legato alla voce (async_create_background_task) e si chiude da sé.
+    # The stream task belongs to the entry (async_create_background_task) and stops by itself.
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
 @callback
 def _migrate_entity_ids(hass: HomeAssistant, entry: JaeDriveConfigEntry) -> None:
-    """0.1.0 metteva il nome dell'auto nell'entity_id (`sensor.jaedrive_<auto>_odometer`).
+    """0.1.0 put the car name in the entity_id (`sensor.jaedrive_<car>_odometer`).
 
-    Dalla 0.1.1 è `sensor.jaedrive_odometer` (la seconda auto prende `_2` da HA), così la plancia
-    pronta si incolla senza modifiche. Rinomina solo gli id rimasti nella forma vecchia e solo se
-    quello nuovo è libero: un id cambiato a mano dall'utente non si tocca.
+    Since 0.1.1 it is `sensor.jaedrive_odometer` (HA adds `_2` for a second car), so the ready-made
+    dashboard works as is. Only ids still in the old form are renamed, and only when the new one is
+    free: an id the user changed by hand is left alone.
     """
     registry = er.async_get(hass)
     for ent in er.async_entries_for_config_entry(registry, entry.entry_id):

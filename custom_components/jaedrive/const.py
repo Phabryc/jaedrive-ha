@@ -1,4 +1,4 @@
-"""Costanti dell'integrazione JaeDrive."""
+"""JaeDrive integration constants."""
 
 from __future__ import annotations
 
@@ -15,13 +15,16 @@ CONF_SCOPES: Final = "scopes"
 
 SCOPE_LOCATION: Final = "location:read"
 
-# Lo stream SSE porta gli aggiornamenti; il polling resta solo come riserva.
+# The SSE stream carries the updates; polling is only a fallback.
 FALLBACK_INTERVAL: Final = timedelta(hours=1)
 STREAM_BACKOFF_MIN: Final = 5
 STREAM_BACKOFF_MAX: Final = 300
-# Nessun dato (nemmeno il ": ping" ogni 60 s) per questo tempo = connessione morta.
+# No data (not even the ": ping" every 30 s) for this long = dead connection.
 STREAM_READ_TIMEOUT: Final = 150
 
 PLANS_URL: Final = "https://jaedrive.com/plans"
 ISSUE_SUBSCRIPTION: Final = "subscription_expired"
 SIGNAL_TRIP_ENDED: Final = "jaedrive_trip_ended_{}"
+
+# Where the cards and the dashboard strategy (frontend/) are served.
+FRONTEND_URL: Final = "/jaedrive_static"

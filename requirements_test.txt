@@ -1,2 +1,2 @@
-# Fissa da sola la versione di Home Assistant con cui girano i test.
+# Pins by itself the Home Assistant version the tests run with.
 pytest-homeassistant-custom-component

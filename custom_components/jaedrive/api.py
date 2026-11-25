@@ -1,4 +1,4 @@
-"""Client del cloud JaeDrive: link guidato, stato e stream SSE (sola lettura)."""
+"""JaeDrive cloud client: guided link, state and SSE stream (read only)."""
 
 from __future__ import annotations
 
@@ -13,15 +13,15 @@ from .const import STREAM_READ_TIMEOUT
 
 
 class JaeDriveError(Exception):
-    """Errore generico (rete, risposta inattesa)."""
+    """Generic error (network, unexpected response)."""
 
 
 class JaeDriveAuthError(JaeDriveError):
-    """Token non valido o revocato (401): serve un nuovo collegamento."""
+    """Invalid or revoked token (401): a new link is needed."""
 
 
 class JaeDriveSubscriptionExpired(JaeDriveError):
-    """Abbonamento cloud non attivo (402): il token resta valido."""
+    """Cloud subscription not active (402): the token is still valid."""
 
     def __init__(self, subscription: dict[str, Any]) -> None:
         super().__init__("subscription expired")
@@ -29,7 +29,7 @@ class JaeDriveSubscriptionExpired(JaeDriveError):
 
 
 async def link_start(session: aiohttp.ClientSession, base_url: str, instance_name: str) -> dict[str, Any]:
-    """Apre una richiesta di collegamento; restituisce deviceCode e link per l'utente."""
+    """Open a link request; returns the deviceCode and the link for the user."""
     try:
         async with session.post(
             f"{base_url}/api/ha/link/start",
@@ -44,7 +44,7 @@ async def link_start(session: aiohttp.ClientSession, base_url: str, instance_nam
 
 
 async def link_poll(session: aiohttp.ClientSession, base_url: str, device_code: str) -> dict[str, Any]:
-    """Una richiesta di polling: status = pending | approved | denied | expired | consumed | invalid."""
+    """One poll request: status = pending | approved | denied | expired | consumed | invalid."""
     try:
         async with session.post(
             f"{base_url}/api/ha/link/poll",
@@ -63,7 +63,7 @@ async def link_poll(session: aiohttp.ClientSession, base_url: str, device_code: 
 
 
 class JaeDriveApi:
-    """Chiamate autenticate col token jdh_."""
+    """Calls authenticated with the jdh_ token."""
 
     def __init__(self, session: aiohttp.ClientSession, base_url: str, token: str) -> None:
         self._session = session
@@ -71,11 +71,11 @@ class JaeDriveApi:
         self._headers = {"Authorization": f"Bearer {token}"}
 
     async def get_state(self) -> dict[str, Any]:
-        """Stato completo di tutte le auto."""
+        """Full state of every car."""
         return await self._get_json("/api/ha/v1/state")
 
     async def get_subscription(self) -> dict[str, Any]:
-        """Stato dell'abbonamento: risponde anche ad abbonamento scaduto."""
+        """Subscription state: answers even when the subscription has expired."""
         return await self._get_json("/api/ha/v1/subscription")
 
     async def _get_json(self, path: str) -> dict[str, Any]:
@@ -97,10 +97,10 @@ class JaeDriveApi:
             raise JaeDriveError(str(err)) from err
 
     async def events(self) -> AsyncIterator[tuple[str, Any]]:
-        """Legge lo stream SSE e restituisce (evento, dati) finché la connessione regge.
+        """Read the SSE stream and yield (event, data) while the connection holds.
 
-        Parser minimo: righe `event:` e `data:`, riga vuota = fine evento, `:` = commento
-        (il keepalive del server). Un silenzio più lungo di STREAM_READ_TIMEOUT chiude.
+        Minimal parser: `event:` and `data:` lines, empty line = end of event, `:` = comment
+        (the server keepalive). A silence longer than STREAM_READ_TIMEOUT closes it.
         """
         try:
             async with self._session.get(

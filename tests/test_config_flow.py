@@ -1,4 +1,4 @@
-"""Collegamento guidato: link mostrato, approvazione sul sito, voce creata."""
+"""Guided link: link shown, approval on the website, entry created."""
 
 from __future__ import annotations
 

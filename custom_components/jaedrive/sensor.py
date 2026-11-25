@@ -1,4 +1,4 @@
-"""Sensori JaeDrive: odometro, tagliando, batteria, autonomie, ultimo viaggio, ultimi 30 giorni."""
+"""JaeDrive sensors: odometer, service, battery, ranges, last trip, Trip A/B, last 30 days."""
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ def _date(value: Any) -> date | None:
 
 
 def _l100(km_per_liter: Any) -> float | None:
-    """Il cloud dà il consumo in km/l; in HA lo mostriamo in L/100 km."""
+    """The cloud gives consumption in km/l; HA shows it in L/100 km."""
     if not isinstance(km_per_liter, (int, float)) or km_per_liter <= 0:
         return None
     return round(100 / km_per_liter, 2)
@@ -86,8 +86,8 @@ def _park(v: dict[str, Any], key: str) -> Any:
 @dataclass(frozen=True, kw_only=True)
 class JaeDriveSensorDescription(SensorEntityDescription):
     value_fn: Callable[[dict[str, Any]], Any]
-    # Creata solo se all'avvio (o alla comparsa dell'auto) c'è un valore: un'auto che non
-    # espone il dato non si ritrova un'entità "sconosciuta" per sempre.
+    # Created only if there is a value at startup (or when the car appears): a car that does not
+    # expose the value does not get an entity that is "unknown" forever.
     exists_fn: Callable[[dict[str, Any]], bool] | None = None
     attrs_fn: Callable[[dict[str, Any]], dict[str, Any]] | None = None
 
@@ -193,7 +193,7 @@ VEHICLE_SENSORS: tuple[JaeDriveSensorDescription, ...] = (
         translation_key="parked_at",
         device_class=SensorDeviceClass.TIMESTAMP,
         value_fn=lambda v: _ts(_park(v, "at")),
-        # Solo con il permesso alla posizione (la chiave "park" esiste) e un parcheggio salvato.
+        # Only with the location permission (the "park" key exists) and a saved parking spot.
         exists_fn=lambda v: "park" in v,
         attrs_fn=lambda v: {"address": _park(v, "address")},
     ),
@@ -280,7 +280,7 @@ KWH = {"device_class": SensorDeviceClass.ENERGY, "native_unit_of_measurement": U
 KW = {"device_class": SensorDeviceClass.POWER, "native_unit_of_measurement": UnitOfPower.KILO_WATT, "suggested_display_precision": 0}
 SOC = {"device_class": SensorDeviceClass.BATTERY, "native_unit_of_measurement": PERCENTAGE, "suggested_display_precision": 0}
 
-# Ultimo viaggio: gli stessi dati delle card del dettaglio viaggio sul sito (non i grafici).
+# Last trip: the same data as the trip detail cards on the website (not the charts).
 LAST_TRIP_SENSORS: tuple[JaeDriveSensorDescription, ...] = (
     _d("last_trip_start", lambda v: _trip(v, "from")),
     _d("last_trip_end", lambda v: _trip(v, "to")),
@@ -325,7 +325,7 @@ LAST_TRIP_SENSORS: tuple[JaeDriveSensorDescription, ...] = (
 
 
 def _slot_sensors(slot: str) -> tuple[JaeDriveSensorDescription, ...]:
-    """Trip A/B in corso (il manuale non ancora azzerato). Ci sono sempre, come nell'app."""
+    """Running Trip A/B (the manual counter not reset yet). Always present, as in the app."""
     return (
         _d(f"trip_{slot}_distance", lambda v: _slot(v, slot, "km"), attrs_fn=lambda v: {"label": _slot(v, slot, "label")}, **KM),
         _d(f"trip_{slot}_fuel_used", lambda v: _slot(v, slot, "liters"), **LITERS),

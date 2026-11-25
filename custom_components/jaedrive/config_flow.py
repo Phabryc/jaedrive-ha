@@ -1,4 +1,4 @@
-"""Collegamento guidato: HA mostra un link, l'utente autorizza sul sito, il token arriva da solo."""
+"""Guided link: HA shows a link, the user authorizes on the website, the token arrives by itself."""
 
 from __future__ import annotations
 
@@ -16,12 +16,12 @@ from .const import CONF_ACCOUNT_ID, CONF_BASE_URL, CONF_SCOPES, CONF_TOKEN, DEFA
 
 _LOGGER = logging.getLogger(__name__)
 
-# Pausa minima fra due poll, qualunque cosa dica il server (i test la azzerano).
+# Minimum pause between two polls, whatever the server says (tests set it to zero).
 MIN_POLL_INTERVAL = 2
 
 
 class JaeDriveConfigFlow(ConfigFlow, domain=DOMAIN):
-    """Device flow (stesso schema del pairing dell'auto): niente token da copiare."""
+    """Device flow (same scheme as the car pairing): no token to copy."""
 
     VERSION = 1
 
@@ -51,7 +51,7 @@ class JaeDriveConfigFlow(ConfigFlow, domain=DOMAIN):
                     async_get_clientsession(self.hass), self._base_url, self.hass.config.location_name
                 )
             except JaeDriveError:
-                _LOGGER.exception("JaeDrive: impossibile avviare il collegamento")
+                _LOGGER.exception("JaeDrive: cannot start the link")
                 return self.async_abort(reason="cannot_connect")
         if self._task is None:
             self._task = self.hass.async_create_task(self._wait_for_approval())
@@ -77,7 +77,7 @@ class JaeDriveConfigFlow(ConfigFlow, domain=DOMAIN):
             try:
                 res = await link_poll(session, self._base_url, self._link["deviceCode"])
             except JaeDriveError:
-                continue  # rete momentaneamente giù: si riprova fino alla scadenza
+                continue  # network briefly down: retry until it expires
             status = res.get("status")
             if status == "approved" and res.get("token"):
                 self._result = res

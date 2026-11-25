@@ -1,4 +1,4 @@
-"""Dove è parcheggiata l'auto (solo se l'utente ha concesso la posizione)."""
+"""Where the car is parked (only if the user shared the location)."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ async def async_setup_entry(
     coordinator = entry.runtime_data
 
     def build(vehicle_id: str, vehicle: dict[str, Any]) -> list[JaeDriveParkTracker]:
-        # La chiave "park" c'è solo con lo scope location:read.
+        # The "park" key is there only with the location:read scope.
         return [JaeDriveParkTracker(coordinator, vehicle_id, "park")] if "park" in vehicle else []
 
     entry.async_on_unload(track_vehicles(coordinator, async_add_entities, build))
